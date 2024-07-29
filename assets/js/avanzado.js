@@ -18,7 +18,7 @@ function mostrarResultado(codigoTexto) {
     document.getElementById('resultModal').addEventListener('hidden.bs.modal', function () {
         document.getElementById('modalResultBody').innerHTML = '';
         scanning = false; // Permite nuevos escaneos
-        iniciarCamara(); // Reiniciar la cámara
+        iniciarCamara(); // Reiniciar la cámara trasera
     });
 
     // Guardar en el historial y en el local storage
@@ -141,10 +141,10 @@ const detenerCamara = () => {
 }
 
 const iniciarCamara = () => {
-    let idCamaraSeleccionada = document.getElementById("listaCamaras").value || cameraId;
-    if (idCamaraSeleccionada) {
+    if (cameraId) {
+        html5QrCode = new Html5Qrcode("reader");
         html5QrCode.start(
-            idCamaraSeleccionada, 
+            cameraId, 
             {
                 fps: 10,
                 qrbox: { width: 250, height: 250 }
