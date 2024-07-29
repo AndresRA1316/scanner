@@ -1,11 +1,7 @@
 let html5QrCode = null;
 let cameraId = null; // Variable para guardar el ID de la cámara seleccionada
-let scanning = false; // Variable para evitar escaneos múltiples
 
 function mostrarResultado(codigoTexto) {
-    if (scanning) return; // Evita que se procese si ya se está escaneando
-    scanning = true; // Marca como escaneando
-
     // Clasificar y formatear el resultado
     let resultadoFormateado = clasificarResultado(codigoTexto);
     
@@ -13,13 +9,6 @@ function mostrarResultado(codigoTexto) {
     document.getElementById('modalResultBody').innerHTML = resultadoFormateado;
     let resultModal = new bootstrap.Modal(document.getElementById('resultModal'), {});
     resultModal.show();
-
-    // Limpiar el modal y reiniciar el escaneo cuando se cierra
-    document.getElementById('resultModal').addEventListener('hidden.bs.modal', function () {
-        document.getElementById('modalResultBody').innerHTML = '';
-        scanning = false; // Permite nuevos escaneos
-        iniciarCamara(); // Reiniciar la cámara
-    });
 
     // Guardar en el historial y en el local storage
     guardarEnHistorial(codigoTexto, resultadoFormateado);
@@ -81,18 +70,10 @@ function borrarHistorial() {
 function lecturaCorrecta(codigoTexto, codigoObjeto) {
     console.log(`Code matched = ${codigoTexto}`, codigoObjeto);
     mostrarResultado(codigoTexto);
-    html5QrCode.stop().then(() => {
-        document.getElementById("imagenReferencial").style.display = "block";
-    }).catch(err => {
-        console.error(err);
-    });
 }
 
 function errorLectura(error) {
     console.warn(`Code scan error = ${error}`);
-    // Asegúrate de que el modal se cierra en caso de error
-    let resultModal = new bootstrap.Modal(document.getElementById('resultModal'), {});
-    resultModal.hide();
 }
 
 Html5Qrcode.getCameras().then(camaras => {
@@ -141,10 +122,17 @@ const detenerCamara = () => {
 }
 
 const reactivarCamara = () => {
-    let idCamaraSeleccionada = document.getElementById("listaCamaras").value;
-    if (idCamaraSeleccionada) {
-        camaraSeleccionada({ value: idCamaraSeleccionada });
-    }
+    Html5Qrcode.getCameras().then(camaras => {
+        if (camaras && camaras.length) {
+            // Seleccionar la cámara trasera por defecto
+            cameraId = camaras.find(c => c.label.toLowerCase().includes('back'))?.id || camaras[0]?.id;
+            if (cameraId) {
+                camaraSeleccionada({ value: cameraId });
+            }
+        }
+    }).catch(err => {
+        console.error(err);
+    });
 }
 
 const html5QrCode2 = new Html5Qrcode("reader-file");
