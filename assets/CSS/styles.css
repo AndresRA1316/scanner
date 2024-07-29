@@ -1,0 +1,17 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family:'poppins', sans-serif;
+}
+.resultado img {
+    max-width: 100px; /* Ajusta el tamaño máximo de las imágenes */
+    height: 30px; /* Mantén la proporción de aspecto */
+}
+
+
+
+
+#reader-file{
+    height: 350px;
+}
