@@ -68,7 +68,7 @@ function actualizarHistorial(historial) {
     historial.forEach((item, index) => {
         let li = document.createElement('li');
         li.className = 'list-group-item d-flex justify-content-between align-items-center';
-        li.innerHTML = `<div class="resultado">${item.resultado}</div><button class="btn btn-danger btn-sm" onclick="eliminarItemHistorial(${index})"><i class="fas fa-trash-alt"></i></button>`;
+        li.innerHTML = `<div class="resultado">${item.resultado}</div><button class="btn btn-primary btn-sm" onclick="eliminarItemHistorial(${index})"><i class="fas fa-trash-alt"></i></button>`;
         historialUl.appendChild(li);
     });
 }

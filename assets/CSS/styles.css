@@ -15,3 +15,33 @@
 #reader-file{
     height: 350px;
 }
+
+/* Asegúrate de que el modal y otros elementos se vean bien en dispositivos móviles */
+@media (max-width: 768px) {
+    #reader, #reader-file {
+        width: 100% !important;
+    }
+
+    .img-thumbnail {
+        max-width: 100%;
+        height: auto;
+    }
+}
+
+@media (min-width: 769px) {
+    #reader, #reader-file {
+        width: 100%;
+    }
+}
+
+/* Asegura que la imagen referencial se ajuste en diferentes dispositivos */
+.img-fluid {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Mejora la apariencia del historial en dispositivos móviles */
+#historial .list-group-item {
+    padding: 10px;
+    font-size: 14px;
+}
