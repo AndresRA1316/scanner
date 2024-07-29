@@ -2,7 +2,6 @@ let html5QrCode = null;
 let cameraId = null; // Variable para guardar el ID de la cámara seleccionada
 
 function mostrarResultado(codigoTexto) {
-    // Clasificar y formatear el resultado
     let resultadoFormateado = clasificarResultado(codigoTexto);
     
     // Mostrar el resultado en el modal
@@ -18,7 +17,6 @@ function clasificarResultado(codigoTexto) {
     if (codigoTexto.startsWith("WIFI:")) {
         return formatearWifi(codigoTexto);
     }
-    // Agregar más clasificaciones si es necesario
     return `<p>${codigoTexto}</p>`;
 }
 
@@ -39,8 +37,6 @@ function guardarEnHistorial(codigoTexto, resultadoFormateado) {
     let historial = JSON.parse(localStorage.getItem('historial')) || [];
     historial.push({codigo: codigoTexto, resultado: resultadoFormateado});
     localStorage.setItem('historial', JSON.stringify(historial));
-
-    // Actualizar el historial en la interfaz
     actualizarHistorial(historial);
 }
 
@@ -76,49 +72,50 @@ function errorLectura(error) {
     console.warn(`Code scan error = ${error}`);
 }
 
-Html5Qrcode.getCameras().then(camaras => {
-    if (camaras && camaras.length) {
-        let select = document.getElementById("listaCamaras");
-        let html = `<option value="" selected>Seleccione una cámara</option>`;
-        camaras.forEach(camara => {
-            html += `<option value="${camara.id}">${camara.label}</option>`;
-        });
-        select.innerHTML = html;
-
-        // Seleccionar la cámara trasera por defecto
-        cameraId = camaras.find(c => c.label.toLowerCase().includes('back'))?.id || camaras[0]?.id;
-        if (cameraId) {
-            camaraSeleccionada({ value: cameraId });
-        }
-    }
-}).catch(err => {
-    console.error(err);
-});
-
 const camaraSeleccionada = (elemento) => {
     let idCamaraSeleccionada = elemento.value;
     document.getElementById("imagenReferencial").style.display = "none";
-    html5QrCode = new Html5Qrcode("reader");
-    html5QrCode.start(
-        idCamaraSeleccionada, 
-        {
-            fps: 10,
-            qrbox: { width: 250, height: 250 }
-        },
-        lecturaCorrecta,
-        errorLectura
-    ).catch(err => {
-        console.error(err);
-    });
+    if (html5QrCode) {
+        html5QrCode.stop().then(() => {
+            html5QrCode.start(
+                idCamaraSeleccionada, 
+                {
+                    fps: 10,
+                    qrbox: { width: 250, height: 250 }
+                },
+                lecturaCorrecta,
+                errorLectura
+            ).catch(err => {
+                console.error(err);
+            });
+        }).catch(err => {
+            console.error(err);
+        });
+    } else {
+        html5QrCode = new Html5Qrcode("reader");
+        html5QrCode.start(
+            idCamaraSeleccionada, 
+            {
+                fps: 10,
+                qrbox: { width: 250, height: 250 }
+            },
+            lecturaCorrecta,
+            errorLectura
+        ).catch(err => {
+            console.error(err);
+        });
+    }
 }
 
 const detenerCamara = () => {
-    html5QrCode.stop().then(() => {
-        document.getElementById("imagenReferencial").style.display = "block";
-        document.getElementById("listaCamaras").value = "";
-    }).catch(err => {
-        console.error(err);
-    });
+    if (html5QrCode) {
+        html5QrCode.stop().then(() => {
+            document.getElementById("imagenReferencial").style.display = "block";
+            document.getElementById("listaCamaras").value = "";
+        }).catch(err => {
+            console.error(err);
+        });
+    }
 }
 
 const reactivarCamara = () => {
