@@ -1,6 +1,5 @@
 let html5QrCode = null;
 
-// Función para mostrar el resultado en el modal
 function mostrarResultado(codigoTexto) {
     // Clasificar y formatear el resultado
     let resultadoFormateado = clasificarResultado(codigoTexto);
@@ -14,7 +13,6 @@ function mostrarResultado(codigoTexto) {
     guardarEnHistorial(codigoTexto, resultadoFormateado);
 }
 
-// Función para clasificar el resultado
 function clasificarResultado(codigoTexto) {
     if (codigoTexto.startsWith("WIFI:")) {
         return formatearWifi(codigoTexto);
@@ -23,7 +21,6 @@ function clasificarResultado(codigoTexto) {
     return `<p>${codigoTexto}</p>`;
 }
 
-// Función para formatear datos de WiFi
 function formatearWifi(codigoTexto) {
     let ssid = codigoTexto.match(/S:(.*?);/)[1];
     let pass = codigoTexto.match(/P:(.*?);/)[1];
@@ -37,7 +34,6 @@ function formatearWifi(codigoTexto) {
     `;
 }
 
-// Función para guardar en el historial
 function guardarEnHistorial(codigoTexto, resultadoFormateado) {
     let historial = JSON.parse(localStorage.getItem('historial')) || [];
     historial.push({codigo: codigoTexto, resultado: resultadoFormateado});
@@ -47,7 +43,6 @@ function guardarEnHistorial(codigoTexto, resultadoFormateado) {
     actualizarHistorial(historial);
 }
 
-// Función para actualizar el historial en la interfaz
 function actualizarHistorial(historial) {
     let historialUl = document.getElementById('historial');
     historialUl.innerHTML = '';
@@ -59,7 +54,6 @@ function actualizarHistorial(historial) {
     });
 }
 
-// Función para eliminar un item del historial
 function eliminarItemHistorial(index) {
     let historial = JSON.parse(localStorage.getItem('historial')) || [];
     historial.splice(index, 1);
@@ -67,86 +61,52 @@ function eliminarItemHistorial(index) {
     actualizarHistorial(historial);
 }
 
-// Función para borrar todo el historial
 function borrarHistorial() {
     localStorage.removeItem('historial');
     actualizarHistorial([]);
 }
 
-// Función para manejar la lectura correcta
 function lecturaCorrecta(codigoTexto, codigoObjeto) {
-    console.log(`Código escaneado = ${codigoTexto}`, codigoObjeto);
+    console.log(`Code matched = ${codigoTexto}`, codigoObjeto);
     mostrarResultado(codigoTexto);
 }
 
-// Función para manejar errores de lectura
 function errorLectura(error) {
-    console.warn(`Error de escaneo = ${error}`);
+    console.warn(`Code scan error = ${error}`);
 }
 
-// Inicializar la cámara y configurar la cámara trasera como predeterminada
-Html5Qrcode.getCameras().then(camaras => {
-    if (camaras && camaras.length) {
-        // Encontrar la cámara trasera
-        const camaraTrasera = camaras.find(camara => camara.label.toLowerCase().includes('back') || camara.label.toLowerCase().includes('rear'));
-        
-        if (camaraTrasera) {
-            let select = document.getElementById("listaCamaras");
-            let html = `<option value="${camaraTrasera.id}" selected>${camaraTrasera.label}</option>`;
-            camaras.forEach(camara => {
-                if (camara !== camaraTrasera) {
-                    html += `<option value="${camara.id}">${camara.label}</option>`;
-                }
-            });
-            select.innerHTML = html;
-
-            // Iniciar la cámara trasera
+function iniciarCamaraTrasera() {
+    Html5Qrcode.getCameras().then(camaras => {
+        if (camaras && camaras.length) {
+            // Seleccionar la cámara trasera por defecto
+            const camaraTrasera = camaras.find(camara => camara.label.toLowerCase().includes('back')) || camaras[0];
+            document.getElementById("imagenReferencial").style.display = "none";
             html5QrCode = new Html5Qrcode("reader");
             html5QrCode.start(
                 camaraTrasera.id, 
-                { fps: 10, qrbox: { width: 250, height: 250 } },
+                {
+                    fps: 10,
+                    qrbox: { width: 250, height: 250 }
+                },
                 lecturaCorrecta,
                 errorLectura
             ).catch(err => {
-                console.error('Error al iniciar la cámara:', err);
+                console.error(err);
             });
-        } else {
-            console.error('No se encontró la cámara trasera.');
         }
-    }
-}).catch(err => {
-    console.error('Error al obtener cámaras:', err);
-});
-
-// Función para seleccionar una cámara
-const camaraSeleccionada = (elemento) => {
-    let idCamaraSeleccionada = elemento.value;
-    document.getElementById("imagenReferencial").style.display = "none";
-    html5QrCode = new Html5Qrcode("reader");
-    html5QrCode.start(
-        idCamaraSeleccionada, 
-        {
-            fps: 10,
-            qrbox: { width: 250, height: 250 }
-        },
-        lecturaCorrecta,
-        errorLectura
-    ).catch(err => {
-        console.error('Error al iniciar la cámara:', err);
+    }).catch(err => {
+        console.error(err);
     });
 }
 
-// Función para detener la cámara
 const detenerCamara = () => {
     html5QrCode.stop().then(() => {
         document.getElementById("imagenReferencial").style.display = "block";
-        document.getElementById("listaCamaras").value = "";
     }).catch(err => {
-        console.error('Error al detener la cámara:', err);
+        console.error(err);
     });
 }
 
-// Configurar escaneo de imágenes
 const html5QrCode2 = new Html5Qrcode("reader-file");
 const fileinput = document.getElementById('qr-input-file');
 fileinput.addEventListener('change', e => {
@@ -174,7 +134,7 @@ fileinput.addEventListener('change', e => {
     html5QrCode2.scanFile(imageFile, true)
         .then(lecturaCorrecta)
         .catch(err => {
-            console.error(`Error al escanear archivo. Razón: ${err}`);
+            console.error(`Error scanning file. Reason: ${err}`);
         });
 });
 
@@ -182,4 +142,7 @@ fileinput.addEventListener('change', e => {
 document.addEventListener('DOMContentLoaded', () => {
     let historial = JSON.parse(localStorage.getItem('historial')) || [];
     actualizarHistorial(historial);
+
+    // Iniciar cámara trasera por defecto
+    iniciarCamaraTrasera();
 });
