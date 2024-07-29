@@ -1,12 +1,16 @@
 let html5QrCode = null;
+let cameraId = null; // Variable para guardar el ID de la cámara seleccionada
 
 function mostrarResultado(codigoTexto) {
+    // Clasificar y formatear el resultado
     let resultadoFormateado = clasificarResultado(codigoTexto);
     
+    // Mostrar el resultado en el modal
     document.getElementById('modalResultBody').innerHTML = resultadoFormateado;
     let resultModal = new bootstrap.Modal(document.getElementById('resultModal'), {});
     resultModal.show();
 
+    // Guardar en el historial y en el local storage
     guardarEnHistorial(codigoTexto, resultadoFormateado);
 }
 
@@ -14,6 +18,7 @@ function clasificarResultado(codigoTexto) {
     if (codigoTexto.startsWith("WIFI:")) {
         return formatearWifi(codigoTexto);
     }
+    // Agregar más clasificaciones si es necesario
     return `<p>${codigoTexto}</p>`;
 }
 
@@ -35,6 +40,7 @@ function guardarEnHistorial(codigoTexto, resultadoFormateado) {
     historial.push({codigo: codigoTexto, resultado: resultadoFormateado});
     localStorage.setItem('historial', JSON.stringify(historial));
 
+    // Actualizar el historial en la interfaz
     actualizarHistorial(historial);
 }
 
@@ -70,37 +76,46 @@ function errorLectura(error) {
     console.warn(`Code scan error = ${error}`);
 }
 
-function iniciarCamaraTrasera() {
-    Html5Qrcode.getCameras().then(camaras => {
-        if (camaras && camaras.length) {
-            // Seleccionar la cámara trasera por defecto
-            const camaraTrasera = camaras.find(camara => camara.label.toLowerCase().includes('back')) || camaras[0];
-            document.getElementById("imagenReferencial").style.display = "none";
-            html5QrCode = new Html5Qrcode("reader");
-            html5QrCode.start(
-                camaraTrasera.id, 
-                {
-                    fps: 10,
-                    qrbox: { width: 250, height: 250 }
-                },
-                lecturaCorrecta,
-                errorLectura
-            ).catch(err => {
-                console.error(err);
-                // Mostrar imagen referencial si ocurre un error al iniciar la cámara
-                document.getElementById("imagenReferencial").style.display = "block";
-            });
+Html5Qrcode.getCameras().then(camaras => {
+    if (camaras && camaras.length) {
+        let select = document.getElementById("listaCamaras");
+        let html = `<option value="" selected>Seleccione una cámara</option>`;
+        camaras.forEach(camara => {
+            html += `<option value="${camara.id}">${camara.label}</option>`;
+        });
+        select.innerHTML = html;
+
+        // Seleccionar la cámara trasera por defecto
+        cameraId = camaras.find(c => c.label.toLowerCase().includes('back'))?.id || camaras[0]?.id;
+        if (cameraId) {
+            camaraSeleccionada({ value: cameraId });
         }
-    }).catch(err => {
+    }
+}).catch(err => {
+    console.error(err);
+});
+
+const camaraSeleccionada = (elemento) => {
+    let idCamaraSeleccionada = elemento.value;
+    document.getElementById("imagenReferencial").style.display = "none";
+    html5QrCode = new Html5Qrcode("reader");
+    html5QrCode.start(
+        idCamaraSeleccionada, 
+        {
+            fps: 10,
+            qrbox: { width: 250, height: 250 }
+        },
+        lecturaCorrecta,
+        errorLectura
+    ).catch(err => {
         console.error(err);
-        // Mostrar imagen referencial si ocurre un error al obtener las cámaras
-        document.getElementById("imagenReferencial").style.display = "block";
     });
 }
 
 const detenerCamara = () => {
     html5QrCode.stop().then(() => {
         document.getElementById("imagenReferencial").style.display = "block";
+        document.getElementById("listaCamaras").value = "";
     }).catch(err => {
         console.error(err);
     });
@@ -114,18 +129,22 @@ fileinput.addEventListener('change', e => {
     }
     const imageFile = e.target.files[0];
 
+    // Crear una URL para la imagen cargada
     const imageUrl = URL.createObjectURL(imageFile);
 
+    // Crear un elemento de imagen para mostrar la vista previa
     const imgElement = document.createElement('img');
     imgElement.src = imageUrl;
-    imgElement.className = 'img-thumbnail';
-    imgElement.style.maxWidth = '150px';
-    imgElement.style.height = 'auto';
+    imgElement.className = 'img-thumbnail'; // Añade clase de Bootstrap para tamaño y estilo
+    imgElement.style.maxWidth = '150px'; // Ajusta el tamaño máximo de la imagen
+    imgElement.style.height = 'auto'; // Mantén la proporción de aspecto
 
+    // Mostrar la imagen en el modal (opcional)
     const modalBody = document.getElementById('modalResultBody');
-    modalBody.innerHTML = '';
+    modalBody.innerHTML = ''; // Limpiar contenido previo
     modalBody.appendChild(imgElement);
 
+    // Scan QR Code
     html5QrCode2.scanFile(imageFile, true)
         .then(lecturaCorrecta)
         .catch(err => {
@@ -133,8 +152,8 @@ fileinput.addEventListener('change', e => {
         });
 });
 
+// Cargar el historial al iniciar
 document.addEventListener('DOMContentLoaded', () => {
     let historial = JSON.parse(localStorage.getItem('historial')) || [];
     actualizarHistorial(historial);
-    iniciarCamaraTrasera();
 });
