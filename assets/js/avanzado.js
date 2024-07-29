@@ -140,20 +140,10 @@ const detenerCamara = () => {
     });
 }
 
-const iniciarCamara = () => {
+const reactivarCamara = () => {
     let idCamaraSeleccionada = document.getElementById("listaCamaras").value;
     if (idCamaraSeleccionada) {
-        html5QrCode.start(
-            idCamaraSeleccionada, 
-            {
-                fps: 10,
-                qrbox: { width: 250, height: 250 }
-            },
-            lecturaCorrecta,
-            errorLectura
-        ).catch(err => {
-            console.error(err);
-        });
+        camaraSeleccionada({ value: idCamaraSeleccionada });
     }
 }
 
