@@ -119,11 +119,8 @@ Html5Qrcode.getCameras().then(camaras => {
 const camaraSeleccionada = (elemento) => {
     let idCamaraSeleccionada = elemento.value;
     document.getElementById("imagenReferencial").style.display = "none";
+    // Detener la cámara anterior si está activa
     detenerCamara().then(() => {
-        // Asegúrate de que solo hay una instancia activa de Html5Qrcode
-        if (html5QrCode) {
-            html5QrCode.clear();
-        }
         html5QrCode = new Html5Qrcode("reader");
         html5QrCode.start(
             idCamaraSeleccionada, 
@@ -145,7 +142,6 @@ const detenerCamara = () => {
     return new Promise((resolve, reject) => {
         if (html5QrCode) {
             html5QrCode.stop().then(() => {
-                html5QrCode.clear();
                 document.getElementById("imagenReferencial").style.display = "block";
                 document.getElementById("listaCamaras").value = "";
                 resolve();
@@ -160,6 +156,7 @@ const detenerCamara = () => {
 
 const iniciarCamara = () => {
     if (cameraId) {
+        // Detener la cámara anterior si está activa
         detenerCamara().then(() => {
             html5QrCode = new Html5Qrcode("reader");
             html5QrCode.start(
