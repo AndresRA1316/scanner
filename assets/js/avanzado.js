@@ -141,7 +141,7 @@ const detenerCamara = () => {
 }
 
 const iniciarCamara = () => {
-    let idCamaraSeleccionada = document.getElementById("listaCamaras").value;
+    let idCamaraSeleccionada = document.getElementById("listaCamaras").value || cameraId;
     if (idCamaraSeleccionada) {
         html5QrCode.start(
             idCamaraSeleccionada, 
