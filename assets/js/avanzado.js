@@ -37,8 +37,13 @@ function mostrarResultado(codigoTexto) {
 function clasificarResultado(codigoTexto) {
     if (codigoTexto.startsWith("WIFI:")) {
         return formatearWifi(codigoTexto);
+    } else if (isValidUrl(codigoTexto)) {
+        return formatearUrl(codigoTexto);
+    } else if (codigoTexto.startsWith("mailto:")) {
+        return formatearEmail(codigoTexto);
+    } else if (codigoTexto.startsWith("tel:")) {
+        return formatearTelefono(codigoTexto);
     }
-    // Agregar más clasificaciones si es necesario
     return `<p>${codigoTexto}</p>`;
 }
 
@@ -52,45 +57,109 @@ function formatearWifi(codigoTexto) {
         <p><strong>SSID:</strong> ${ssid}</p>
         <p><strong>Contraseña:</strong> ${pass}</p>
         <p><strong>Tipo:</strong> ${tipo}</p>
+        <button class="btn btn-primary" onclick="conectarWifi('${ssid}', '${pass}')">Conectar</button>
+        <button class="btn btn-secondary" onclick="copiarTexto('${codigoTexto}')">Copiar</button>
     `;
+}
+
+function formatearUrl(codigoTexto) {
+    return `
+        <h5>Enlace Detectado</h5>
+        <p><a href="${codigoTexto}" target="_blank">${codigoTexto}</a></p>
+        <button class="btn btn-primary" onclick="abrirEnlace('${codigoTexto}')">Abrir</button>
+        <button class="btn btn-secondary" onclick="copiarTexto('${codigoTexto}')">Copiar</button>
+    `;
+}
+
+function formatearEmail(codigoTexto) {
+    let email = codigoTexto.replace('mailto:', '');
+    return `
+        <h5>Correo Electrónico Detectado</h5>
+        <p>${email}</p>
+        <button class="btn btn-primary" onclick="enviarEmail('${email}', '', '')">Enviar Email</button>
+        <button class="btn btn-secondary" onclick="copiarTexto('${codigoTexto}')">Copiar</button>
+    `;
+}
+
+function formatearTelefono(codigoTexto) {
+    let telefono = codigoTexto.replace('tel:', '');
+    return `
+        <h5>Teléfono Detectado</h5>
+        <p>${telefono}</p>
+        <button class="btn btn-primary" onclick="llamarTelefono('${telefono}')">Llamar</button>
+        <button class="btn btn-secondary" onclick="copiarTexto('${codigoTexto}')">Copiar</button>
+    `;
+}
+
+function isValidUrl(string) {
+    try {
+        new URL(string);
+        return true;
+    } catch (_) {
+        return false;  
+    }
+}
+
+function copiarTexto(texto) {
+    navigator.clipboard.writeText(texto).then(() => {
+        alert("Texto copiado al portapapeles");
+    }).catch(err => {
+        console.error("Error al copiar el texto: ", err);
+    });
+}
+
+function abrirEnlace(url) {
+    window.open(url, '_blank');
+}
+
+function conectarWifi(ssid, pass) {
+    alert(`Conectando a la red WiFi:\nSSID: ${ssid}\nContraseña: ${pass}`);
+    // Aquí puedes agregar el código para conectarse a la WiFi si es posible desde el navegador
+}
+
+function enviarEmail(to, subject, body) {
+    window.location.href = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
+function llamarTelefono(telefono) {
+    window.location.href = `tel:${telefono}`;
 }
 
 function guardarEnHistorial(codigoTexto, resultadoFormateado) {
     let historial = JSON.parse(localStorage.getItem('historial')) || [];
-    historial.push({codigo: codigoTexto, resultado: resultadoFormateado});
+    historial.push({ codigoTexto, resultadoFormateado });
     localStorage.setItem('historial', JSON.stringify(historial));
-
-    // Actualizar el historial en la interfaz
-    actualizarHistorial(historial);
+    actualizarHistorial();
 }
 
+function actualizarHistorial() {
+    let historial = JSON.parse(localStorage.getItem('historialQR')) || [];
+    let historialElement = document.getElementById('historial');
+    historialElement.innerHTML = '';
 
-function actualizarHistorial(historial) {
-    let historialUl = document.getElementById('historial');
-    historialUl.innerHTML = '';
-
-    if (historial.length === 0) {
-        historialUl.innerHTML = '<li class="list-group-item">Ups!, No hay nada aun.</li>';
-    } else {
-        historial.forEach((item, index) => {
-            let li = document.createElement('li');
-            li.className = 'list-group-item d-flex justify-content-between align-items-center';
-            li.innerHTML = `<div class="resultado">${item.resultado}</div><button class="btn btn-primary btn-sm" onclick="eliminarItemHistorial(${index})"><i class="fas fa-trash-alt"></i></button>`;
-            historialUl.appendChild(li);
-        });
-    }
+    historial.forEach((item, index) => {
+        let listItem = document.createElement('li');
+        listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+        listItem.innerHTML = `
+            ${item.resultadoFormateado}
+            <button class="btn btn-danger btn-sm" onclick="eliminarItemHistorial(${index})">
+                <i class="bi bi-trash"></i>
+            </button>
+        `;
+        historialElement.appendChild(listItem);
+    });
 }
 
 function eliminarItemHistorial(index) {
     let historial = JSON.parse(localStorage.getItem('historial')) || [];
     historial.splice(index, 1);
     localStorage.setItem('historial', JSON.stringify(historial));
-    actualizarHistorial(historial);
+    actualizarHistorial();
 }
 
 function borrarHistorial() {
-    localStorage.removeItem('historial');
-    actualizarHistorial([]);
+    localStorage.removeItem('historialQR');
+    actualizarHistorial();
 }
 
 function lecturaCorrecta(codigoTexto, codigoObjeto) {
@@ -235,8 +304,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let historial = JSON.parse(localStorage.getItem('historial')) || [];
     actualizarHistorial(historial);
 });
-
-
 
 function generarQR() {
     let qrInput = document.getElementById('qr-input').value;
