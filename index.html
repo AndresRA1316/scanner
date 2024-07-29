@@ -50,7 +50,9 @@
                                 </tr>
                             </thead>
                             <tbody id="historial">
-                                <!-- Items del historial se añadirán aquí -->
+                                <tr id="mensajeVacio" style="display: none;">
+                                    <td colspan="2" class="text-center">Ups, no hay nada en el historial</td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -59,13 +61,27 @@
                 <div class="tab-pane fade" id="nav-generate" role="tabpanel" aria-labelledby="nav-generate-tab" tabindex="0">
                     <h3>Generar Código QR</h3>
                     <div class="mb-3">
-                        <label for="qr-input" class="form-label">Texto para el QR:</label>
-                        <input type="text" id="qr-input" class="form-control">
+                        <label for="qr-type" class="form-label">Tipo de QR:</label>
+                        <select id="qr-type" class="form-select" onchange="mostrarCampos()">
+                            <option value="">Seleccionar tipo</option>
+                            <option value="url">URL</option>
+                            <option value="email">Email</option>
+                            <option value="wifi">WiFi</option>
+                            <option value="texto">Texto</option>
+                            <option value="telefono">Teléfono</option>
+                            <option value="ubicacion">Ubicación</option>
+                            <option value="evento">Evento</option>
+                        </select>
+                    </div>
+                    <div id="qr-fields">
+                        <!-- Los campos específicos se agregarán aquí -->
                     </div>
                     <button class="btn btn-primary mb-2" onclick="generarQR()">Generar QR</button>
                     <div id="qr-output" class="mt-3"></div>
                     <button id="download-btn" class="btn btn-secondary mt-2" style="display: none;" onclick="descargarQR()">Descargar QR</button>
                 </div>
+                
+                
             </div>
         </div>
     </div>

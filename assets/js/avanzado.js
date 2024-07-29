@@ -158,21 +158,34 @@ function guardarEnHistorial(codigoTexto, resultadoFormateado) {
 function actualizarHistorial() {
     let historial = JSON.parse(localStorage.getItem('historial')) || [];
     let historialElement = document.getElementById('historial');
-    historialElement.innerHTML = '';
+    let mensajeVacio = document.getElementById('mensajeVacio');
 
-    historial.forEach((item, index) => {
-        let row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${item.resultadoFormateado}</td>
-            <td class="acciones">
-                <button class="btn btn-danger btn-sm" onclick="eliminarItemHistorial(${index})">
-                    <i class="bi bi-trash"></i> Eliminar
-                </button>
-            </td>
-        `;
-        historialElement.appendChild(row);
-    });
+    // Limpiar el contenido de la tabla, excepto la fila del mensaje vacío
+    historialElement.innerHTML = '';
+    historialElement.appendChild(mensajeVacio);
+
+    // Mostrar mensaje si el historial está vacío
+    if (historial.length === 0) {
+        mensajeVacio.style.display = 'table-row';
+    } else {
+        mensajeVacio.style.display = 'none';
+
+        historial.forEach((item, index) => {
+            let row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${item.resultadoFormateado}</td>
+                <td class="acciones">
+                    <button class="btn btn-danger btn-sm" onclick="eliminarItemHistorial(${index})">
+                        <i class="bi bi-trash"></i> Eliminar
+                    </button>
+                </td>
+            `;
+            historialElement.appendChild(row);
+        });
+    }
 }
+
+
 
 
 function eliminarItemHistorial(index) {
@@ -327,15 +340,158 @@ document.addEventListener('DOMContentLoaded', () => {
     let historial = JSON.parse(localStorage.getItem('historial')) || [];
     actualizarHistorial(historial);
 });
+function mostrarCampos() {
+    const tipo = document.getElementById('qr-type').value;
+    const campos = document.getElementById('qr-fields');
+    campos.innerHTML = ''; // Limpiar campos existentes
+
+    switch(tipo) {
+        case 'url':
+            campos.innerHTML = `
+                <div class="mb-3">
+                    <label for="qr-input" class="form-label">URL:</label>
+                    <input type="text" id="qr-input" class="form-control">
+                </div>
+            `;
+            break;
+        case 'email':
+            campos.innerHTML = `
+                <div class="mb-3">
+                    <label for="email-address" class="form-label">Email:</label>
+                    <input type="email" id="email-address" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label for="email-subject" class="form-label">Asunto:</label>
+                    <input type="text" id="email-subject" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label for="email-body" class="form-label">Cuerpo:</label>
+                    <textarea id="email-body" class="form-control"></textarea>
+                </div>
+            `;
+            break;
+        case 'wifi':
+            campos.innerHTML = `
+                <div class="mb-3">
+                    <label for="wifi-ssid" class="form-label">SSID:</label>
+                    <input type="text" id="wifi-ssid" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label for="wifi-password" class="form-label">Contraseña:</label>
+                    <input type="text" id="wifi-password" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label for="wifi-encryption" class="form-label">Tipo de Cifrado:</label>
+                    <select id="wifi-encryption" class="form-select">
+                        <option value="WPA">WPA</option>
+                        <option value="WEP">WEP</option>
+                        <option value="nopass">Ninguno</option>
+                    </select>
+                </div>
+            `;
+            break;
+        case 'texto':
+            campos.innerHTML = `
+                <div class="mb-3">
+                    <label for="qr-input" class="form-label">Texto:</label>
+                    <input type="text" id="qr-input" class="form-control">
+                </div>
+            `;
+            break;
+        case 'telefono':
+            campos.innerHTML = `
+                <div class="mb-3">
+                    <label for="phone-number" class="form-label">Número de Teléfono:</label>
+                    <input type="text" id="phone-number" class="form-control">
+                </div>
+            `;
+            break;
+        case 'ubicacion':
+            campos.innerHTML = `
+                <div class="mb-3">
+                    <label for="latitude" class="form-label">Latitud:</label>
+                    <input type="text" id="latitude" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label for="longitude" class="form-label">Longitud:</label>
+                    <input type="text" id="longitude" class="form-control">
+                </div>
+            `;
+            break;
+        case 'evento':
+            campos.innerHTML = `
+                <div class="mb-3">
+                    <label for="event-title" class="form-label">Título del Evento:</label>
+                    <input type="text" id="event-title" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label for="event-location" class="form-label">Ubicación:</label>
+                    <input type="text" id="event-location" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label for="event-start" class="form-label">Fecha y Hora de Inicio:</label>
+                    <input type="datetime-local" id="event-start" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label for="event-end" class="form-label">Fecha y Hora de Fin:</label>
+                    <input type="datetime-local" id="event-end" class="form-control">
+                </div>
+            `;
+            break;
+        default:
+            break;
+    }
+}
 
 function generarQR() {
-    let qrInput = document.getElementById('qr-input').value;
+    let tipo = document.getElementById('qr-type').value;
+    let qrInput;
+    switch(tipo) {
+        case 'url':
+            qrInput = document.getElementById('qr-input').value;
+            break;
+        case 'email':
+            let email = document.getElementById('email-address').value;
+            let subject = document.getElementById('email-subject').value;
+            let body = document.getElementById('email-body').value;
+            qrInput = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            break;
+        case 'wifi':
+            let ssid = document.getElementById('wifi-ssid').value;
+            let password = document.getElementById('wifi-password').value;
+            let encryption = document.getElementById('wifi-encryption').value;
+            qrInput = `WIFI:T:${encryption};S:${ssid};P:${password};;`;
+            break;
+        case 'texto':
+            qrInput = document.getElementById('qr-input').value;
+            break;
+        case 'telefono':
+            let phoneNumber = document.getElementById('phone-number').value;
+            qrInput = `tel:${phoneNumber}`;
+            break;
+        case 'ubicacion':
+            let latitude = document.getElementById('latitude').value;
+            let longitude = document.getElementById('longitude').value;
+            qrInput = `geo:${latitude},${longitude}`;
+            break;
+        case 'evento':
+            let title = document.getElementById('event-title').value;
+            let location = document.getElementById('event-location').value;
+            let start = document.getElementById('event-start').value;
+            let end = document.getElementById('event-end').value;
+            qrInput = `BEGIN:VEVENT\nSUMMARY:${title}\nLOCATION:${location}\nDTSTART:${start.replace(/-/g, '').replace(/:/g, '')}\nDTEND:${end.replace(/-/g, '').replace(/:/g, '')}\nEND:VEVENT`;
+            break;
+        default:
+            alert('Por favor, selecciona un tipo de QR.');
+            return;
+    }
+
     let qrOutput = document.getElementById('qr-output');
     let downloadBtn = document.getElementById('download-btn');
 
     // Generar el código QR
     qrOutput.innerHTML = '';
-    let qrCode = new QRCode(qrOutput, {
+    new QRCode(qrOutput, {
         text: qrInput,
         width: 256,
         height: 256
