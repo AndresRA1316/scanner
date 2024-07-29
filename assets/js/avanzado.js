@@ -1,15 +1,12 @@
 let html5QrCode = null;
 
 function mostrarResultado(codigoTexto) {
-    // Clasificar y formatear el resultado
     let resultadoFormateado = clasificarResultado(codigoTexto);
     
-    // Mostrar el resultado en el modal
     document.getElementById('modalResultBody').innerHTML = resultadoFormateado;
     let resultModal = new bootstrap.Modal(document.getElementById('resultModal'), {});
     resultModal.show();
 
-    // Guardar en el historial y en el local storage
     guardarEnHistorial(codigoTexto, resultadoFormateado);
 }
 
@@ -17,7 +14,6 @@ function clasificarResultado(codigoTexto) {
     if (codigoTexto.startsWith("WIFI:")) {
         return formatearWifi(codigoTexto);
     }
-    // Agregar más clasificaciones si es necesario
     return `<p>${codigoTexto}</p>`;
 }
 
@@ -39,7 +35,6 @@ function guardarEnHistorial(codigoTexto, resultadoFormateado) {
     historial.push({codigo: codigoTexto, resultado: resultadoFormateado});
     localStorage.setItem('historial', JSON.stringify(historial));
 
-    // Actualizar el historial en la interfaz
     actualizarHistorial(historial);
 }
 
@@ -92,10 +87,14 @@ function iniciarCamaraTrasera() {
                 errorLectura
             ).catch(err => {
                 console.error(err);
+                // Mostrar imagen referencial si ocurre un error al iniciar la cámara
+                document.getElementById("imagenReferencial").style.display = "block";
             });
         }
     }).catch(err => {
         console.error(err);
+        // Mostrar imagen referencial si ocurre un error al obtener las cámaras
+        document.getElementById("imagenReferencial").style.display = "block";
     });
 }
 
@@ -115,22 +114,18 @@ fileinput.addEventListener('change', e => {
     }
     const imageFile = e.target.files[0];
 
-    // Crear una URL para la imagen cargada
     const imageUrl = URL.createObjectURL(imageFile);
 
-    // Crear un elemento de imagen para mostrar la vista previa
     const imgElement = document.createElement('img');
     imgElement.src = imageUrl;
-    imgElement.className = 'img-thumbnail'; // Añade clase de Bootstrap para tamaño y estilo
-    imgElement.style.maxWidth = '150px'; // Ajusta el tamaño máximo de la imagen
-    imgElement.style.height = 'auto'; // Mantén la proporción de aspecto
+    imgElement.className = 'img-thumbnail';
+    imgElement.style.maxWidth = '150px';
+    imgElement.style.height = 'auto';
 
-    // Mostrar la imagen en el modal (opcional)
     const modalBody = document.getElementById('modalResultBody');
-    modalBody.innerHTML = ''; // Limpiar contenido previo
+    modalBody.innerHTML = '';
     modalBody.appendChild(imgElement);
 
-    // Scan QR Code
     html5QrCode2.scanFile(imageFile, true)
         .then(lecturaCorrecta)
         .catch(err => {
@@ -138,11 +133,8 @@ fileinput.addEventListener('change', e => {
         });
 });
 
-// Cargar el historial al iniciar
 document.addEventListener('DOMContentLoaded', () => {
     let historial = JSON.parse(localStorage.getItem('historial')) || [];
     actualizarHistorial(historial);
-
-    // Iniciar cámara trasera por defecto
     iniciarCamaraTrasera();
 });
