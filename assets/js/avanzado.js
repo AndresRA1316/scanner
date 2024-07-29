@@ -16,11 +16,13 @@ function mostrarResultado(codigoTexto) {
 
     // Limpiar el modal y reiniciar el escaneo cuando se cierra
     resultModal._element.addEventListener('hidden.bs.modal', function () {
-        // Detener la cámara actual
+        // Detener la cámara actual y reiniciar si está activa
         detenerCamara().then(() => {
-            // Mostrar la imagen referencial y reiniciar la cámara
+            // Mostrar la imagen referencial y reiniciar la cámara si es necesario
             document.getElementById("imagenReferencial").style.display = "block";
-            iniciarCamara(); // Reiniciar la cámara trasera
+            if (!scanning) { // Solo reiniciar si no se está escaneando
+                iniciarCamara(); // Reiniciar la cámara trasera
+            }
         }).catch(err => {
             console.error(err);
         });
@@ -128,7 +130,9 @@ const camaraSeleccionada = (elemento) => {
     document.getElementById("imagenReferencial").style.display = "none";
     // Detener la cámara anterior si está activa
     detenerCamara().then(() => {
-        html5QrCode = new Html5Qrcode("reader");
+        if (!html5QrCode) {
+            html5QrCode = new Html5Qrcode("reader");
+        }
         html5QrCode.start(
             idCamaraSeleccionada, 
             {
@@ -149,7 +153,7 @@ const detenerCamara = () => {
     return new Promise((resolve, reject) => {
         if (html5QrCode) {
             html5QrCode.stop().then(() => {
-                // Eliminar la instancia de Html5Qrcode
+                // Eliminar la instancia de Html5Qrcode solo si existe
                 html5QrCode = null;
                 document.getElementById("imagenReferencial").style.display = "block";
                 document.getElementById("listaCamaras").value = "";
@@ -167,7 +171,9 @@ const iniciarCamara = () => {
     if (cameraId) {
         // Detener la cámara anterior si está activa
         detenerCamara().then(() => {
-            html5QrCode = new Html5Qrcode("reader");
+            if (!html5QrCode) {
+                html5QrCode = new Html5Qrcode("reader");
+            }
             html5QrCode.start(
                 cameraId, 
                 {
