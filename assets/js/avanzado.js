@@ -16,9 +16,16 @@ function mostrarResultado(codigoTexto) {
 
     // Limpiar el modal y reiniciar el escaneo cuando se cierra
     resultModal._element.addEventListener('hidden.bs.modal', function () {
+        // Detener la cámara actual
+        detenerCamara().then(() => {
+            // Mostrar la imagen referencial y reiniciar la cámara
+            document.getElementById("imagenReferencial").style.display = "block";
+            iniciarCamara(); // Reiniciar la cámara trasera
+        }).catch(err => {
+            console.error(err);
+        });
         document.getElementById('modalResultBody').innerHTML = '';
         scanning = false; // Permite nuevos escaneos
-        iniciarCamara(); // Reiniciar la cámara trasera
     });
 
     // Guardar en el historial y en el local storage
@@ -142,6 +149,8 @@ const detenerCamara = () => {
     return new Promise((resolve, reject) => {
         if (html5QrCode) {
             html5QrCode.stop().then(() => {
+                // Eliminar la instancia de Html5Qrcode
+                html5QrCode = null;
                 document.getElementById("imagenReferencial").style.display = "block";
                 document.getElementById("listaCamaras").value = "";
                 resolve();
@@ -173,6 +182,8 @@ const iniciarCamara = () => {
         }).catch(err => {
             console.error(err);
         });
+    } else {
+        console.warn("No se ha seleccionado ninguna cámara.");
     }
 }
 
