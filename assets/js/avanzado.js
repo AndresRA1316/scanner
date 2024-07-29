@@ -133,7 +133,7 @@ function guardarEnHistorial(codigoTexto, resultadoFormateado) {
 }
 
 function actualizarHistorial() {
-    let historial = JSON.parse(localStorage.getItem('historialQR')) || [];
+    let historial = JSON.parse(localStorage.getItem('historial')) || [];
     let historialElement = document.getElementById('historial');
     historialElement.innerHTML = '';
 
@@ -158,7 +158,7 @@ function eliminarItemHistorial(index) {
 }
 
 function borrarHistorial() {
-    localStorage.removeItem('historialQR');
+    localStorage.removeItem('historial');
     actualizarHistorial();
 }
 
@@ -228,20 +228,17 @@ const detenerCamara = () => {
     return new Promise((resolve, reject) => {
         if (html5QrCode) {
             html5QrCode.stop().then(() => {
-                // Eliminar la instancia de Html5Qrcode solo si existe
+                // Eliminar la instancia de Html5Qrcode solo si se detuvo correctamente
                 html5QrCode = null;
-                document.getElementById("imagenReferencial").style.display = "block";
-                document.getElementById("listaCamaras").value = "";
                 resolve();
             }).catch(err => {
                 reject(err);
             });
         } else {
-            resolve();
+            resolve(); // Resolver si no hay instancia para detener
         }
     });
 }
-
 const iniciarCamara = () => {
     if (cameraId) {
         // Detener la cámara anterior si está activa
