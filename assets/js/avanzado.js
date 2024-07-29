@@ -235,3 +235,33 @@ document.addEventListener('DOMContentLoaded', () => {
     let historial = JSON.parse(localStorage.getItem('historial')) || [];
     actualizarHistorial(historial);
 });
+
+
+
+function generarQR() {
+    let qrInput = document.getElementById('qr-input').value;
+    let qrOutput = document.getElementById('qr-output');
+    let downloadBtn = document.getElementById('download-btn');
+
+    // Generar el código QR
+    qrOutput.innerHTML = '';
+    let qrCode = new QRCode(qrOutput, {
+        text: qrInput,
+        width: 256,
+        height: 256
+    });
+
+    // Mostrar el botón de descarga
+    downloadBtn.style.display = 'block';
+}
+
+function descargarQR() {
+    let qrCanvas = document.querySelector('#qr-output canvas');
+    if (qrCanvas) {
+        let qrImage = qrCanvas.toDataURL('image/png');
+        let downloadLink = document.createElement('a');
+        downloadLink.href = qrImage;
+        downloadLink.download = 'qr-code.png';
+        downloadLink.click();
+    }
+}
