@@ -1,7 +1,13 @@
 let html5QrCode = null;
 let cameraId = null; // Variable para guardar el ID de la cámara seleccionada
 
+// Variable para asegurarse de que el escaneo se realice solo una vez
+let scanning = false;
+
 function mostrarResultado(codigoTexto) {
+    if (scanning) return; // Evita que se procese si ya se está escaneando
+    scanning = true; // Marca como escaneando
+
     // Clasificar y formatear el resultado
     let resultadoFormateado = clasificarResultado(codigoTexto);
     
@@ -12,6 +18,12 @@ function mostrarResultado(codigoTexto) {
 
     // Guardar en el historial y en el local storage
     guardarEnHistorial(codigoTexto, resultadoFormateado);
+
+    // Limpiar el modal cuando se cierra
+    document.getElementById('resultModal').addEventListener('hidden.bs.modal', function () {
+        document.getElementById('modalResultBody').innerHTML = '';
+        scanning = false; // Permite nuevos escaneos
+    });
 }
 
 function clasificarResultado(codigoTexto) {
@@ -70,10 +82,14 @@ function borrarHistorial() {
 function lecturaCorrecta(codigoTexto, codigoObjeto) {
     console.log(`Code matched = ${codigoTexto}`, codigoObjeto);
     mostrarResultado(codigoTexto);
+    detenerCamara(); // Detener la cámara después de escanear un código
 }
 
 function errorLectura(error) {
     console.warn(`Code scan error = ${error}`);
+    // Asegúrate de que el modal se cierra en caso de error
+    let resultModal = new bootstrap.Modal(document.getElementById('resultModal'), {});
+    resultModal.hide();
 }
 
 Html5Qrcode.getCameras().then(camaras => {
