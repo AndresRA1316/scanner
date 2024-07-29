@@ -43,6 +43,10 @@ function clasificarResultado(codigoTexto) {
         return formatearEmail(codigoTexto);
     } else if (codigoTexto.startsWith("tel:")) {
         return formatearTelefono(codigoTexto);
+    } else if (codigoTexto.endsWith('.pdf')) {
+        return formatearPdf(codigoTexto);
+    } else if (isValidTextOrNumber(codigoTexto)) {
+        return formatearTexto(codigoTexto);
     }
     return `<p>${codigoTexto}</p>`;
 }
@@ -58,13 +62,13 @@ function formatearWifi(codigoTexto) {
         <p><strong>Contraseña:</strong> ${pass}</p>
         <p><strong>Tipo:</strong> ${tipo}</p>
         <button class="btn btn-primary" onclick="conectarWifi('${ssid}', '${pass}')">Conectar</button>
-        <button class="btn btn-secondary" onclick="copiarTexto('${codigoTexto}')">Copiar</button>
+        <button class="btn btn-secondary" onclick="copiarTexto('${pass}')">Copiar</button>
     `;
 }
 
 function formatearUrl(codigoTexto) {
     return `
-        <h5>Enlace Detectado</h5>
+        <h5>Enlace:</h5>
         <p><a href="${codigoTexto}" target="_blank">${codigoTexto}</a></p>
         <button class="btn btn-primary" onclick="abrirEnlace('${codigoTexto}')">Abrir</button>
         <button class="btn btn-secondary" onclick="copiarTexto('${codigoTexto}')">Copiar</button>
@@ -74,7 +78,7 @@ function formatearUrl(codigoTexto) {
 function formatearEmail(codigoTexto) {
     let email = codigoTexto.replace('mailto:', '');
     return `
-        <h5>Correo Electrónico Detectado</h5>
+        <h5>Correo:</h5>
         <p>${email}</p>
         <button class="btn btn-primary" onclick="enviarEmail('${email}', '', '')">Enviar Email</button>
         <button class="btn btn-secondary" onclick="copiarTexto('${codigoTexto}')">Copiar</button>
@@ -84,9 +88,24 @@ function formatearEmail(codigoTexto) {
 function formatearTelefono(codigoTexto) {
     let telefono = codigoTexto.replace('tel:', '');
     return `
-        <h5>Teléfono Detectado</h5>
+        <h5>Teléfono:</h5>
         <p>${telefono}</p>
         <button class="btn btn-primary" onclick="llamarTelefono('${telefono}')">Llamar</button>
+        <button class="btn btn-secondary" onclick="copiarTexto('${codigoTexto}')">Copiar</button>
+    `;
+}
+
+function formatearPdf(codigoTexto) {
+    return `
+        <h5>PDF:</h5>
+        <p><a href="${codigoTexto}" download>Descargar PDF</a></p>
+    `;
+}
+
+function formatearTexto(codigoTexto) {
+    return `
+        <h5>Texto:</h5>
+        <p>${codigoTexto}</p>
         <button class="btn btn-secondary" onclick="copiarTexto('${codigoTexto}')">Copiar</button>
     `;
 }
@@ -100,9 +119,13 @@ function isValidUrl(string) {
     }
 }
 
+function isValidTextOrNumber(string) {
+    return /^[\w\s]+$/.test(string); // Verifica si es texto o número
+}
+
 function copiarTexto(texto) {
     navigator.clipboard.writeText(texto).then(() => {
-        alert("Texto copiado al portapapeles");
+        swal.fire("Texto copiado al portapapeles");
     }).catch(err => {
         console.error("Error al copiar el texto: ", err);
     });
@@ -113,7 +136,7 @@ function abrirEnlace(url) {
 }
 
 function conectarWifi(ssid, pass) {
-    alert(`Conectando a la red WiFi:\nSSID: ${ssid}\nContraseña: ${pass}`);
+    swal.fire(`Conectando a la red WiFi:\nSSID: ${ssid}\nContraseña: ${pass}`);
     // Aquí puedes agregar el código para conectarse a la WiFi si es posible desde el navegador
 }
 
@@ -138,17 +161,19 @@ function actualizarHistorial() {
     historialElement.innerHTML = '';
 
     historial.forEach((item, index) => {
-        let listItem = document.createElement('li');
-        listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
-        listItem.innerHTML = `
-            ${item.resultadoFormateado}
-            <button class="btn btn-danger btn-sm" onclick="eliminarItemHistorial(${index})">
-                <i class="bi bi-trash"></i>
-            </button>
+        let row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${item.resultadoFormateado}</td>
+            <td class="acciones">
+                <button class="btn btn-danger btn-sm" onclick="eliminarItemHistorial(${index})">
+                    <i class="bi bi-trash"></i> Eliminar
+                </button>
+            </td>
         `;
-        historialElement.appendChild(listItem);
+        historialElement.appendChild(row);
     });
 }
+
 
 function eliminarItemHistorial(index) {
     let historial = JSON.parse(localStorage.getItem('historial')) || [];
@@ -156,6 +181,7 @@ function eliminarItemHistorial(index) {
     localStorage.setItem('historial', JSON.stringify(historial));
     actualizarHistorial();
 }
+
 
 function borrarHistorial() {
     localStorage.removeItem('historial');
