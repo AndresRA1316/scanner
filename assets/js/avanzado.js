@@ -1,38 +1,123 @@
 let html5QrCode = null;
 let cameraId = null; // Variable para guardar el ID de la cámara seleccionada
+let isScanning = false; // Variable para evitar múltiples escaneos
 
-document.addEventListener('DOMContentLoaded', () => {
-    // Inicializar cámaras al cargar la página
-    Html5Qrcode.getCameras().then(camaras => {
-        if (camaras && camaras.length) {
-            let select = document.getElementById("listaCamaras");
-            let html = `<option value="" selected>Seleccione una cámara</option>`;
-            camaras.forEach(camara => {
-                html += `<option value="${camara.id}">${camara.label}</option>`;
-            });
-            select.innerHTML = html;
+// Mostrar el resultado en el modal
+function mostrarResultado(codigoTexto) {
+    // Clasificar y formatear el resultado
+    let resultadoFormateado = clasificarResultado(codigoTexto);
+    
+    // Mostrar el resultado en el modal
+    document.getElementById('modalResultBody').innerHTML = resultadoFormateado;
+    let resultModal = new bootstrap.Modal(document.getElementById('resultModal'), {});
+    resultModal.show();
 
-            // Seleccionar la cámara trasera por defecto
-            cameraId = camaras.find(c => c.label.toLowerCase().includes('back'))?.id || camaras[0]?.id;
-            if (cameraId) {
-                camaraSeleccionada({ value: cameraId });
-            }
-        }
-    }).catch(err => {
-        console.error(err);
-    });
+    // Guardar en el historial y en el local storage
+    guardarEnHistorial(codigoTexto, resultadoFormateado);
+}
 
-    // Cargar el historial al iniciar
+// Clasificar el resultado
+function clasificarResultado(codigoTexto) {
+    if (codigoTexto.startsWith("WIFI:")) {
+        return formatearWifi(codigoTexto);
+    }
+    // Agregar más clasificaciones si es necesario
+    return `<p>${codigoTexto}</p>`;
+}
+
+// Formatear información de WiFi
+function formatearWifi(codigoTexto) {
+    let ssid = codigoTexto.match(/S:(.*?);/)[1];
+    let pass = codigoTexto.match(/P:(.*?);/)[1];
+    let tipo = codigoTexto.match(/T:(.*?);/)[1];
+    
+    return `
+        <h5>Información de WiFi</h5>
+        <p><strong>SSID:</strong> ${ssid}</p>
+        <p><strong>Contraseña:</strong> ${pass}</p>
+        <p><strong>Tipo:</strong> ${tipo}</p>
+    `;
+}
+
+// Guardar en el historial
+function guardarEnHistorial(codigoTexto, resultadoFormateado) {
     let historial = JSON.parse(localStorage.getItem('historial')) || [];
+    historial.push({codigo: codigoTexto, resultado: resultadoFormateado});
+    localStorage.setItem('historial', JSON.stringify(historial));
+
+    // Actualizar el historial en la interfaz
     actualizarHistorial(historial);
+}
+
+// Actualizar el historial en la interfaz
+function actualizarHistorial(historial) {
+    let historialUl = document.getElementById('historial');
+    historialUl.innerHTML = '';
+    historial.forEach((item, index) => {
+        let li = document.createElement('li');
+        li.className = 'list-group-item d-flex justify-content-between align-items-center';
+        li.innerHTML = `<div class="resultado">${item.resultado}</div><button class="btn btn-danger btn-sm" onclick="eliminarItemHistorial(${index})"><i class="fas fa-trash-alt"></i></button>`;
+        historialUl.appendChild(li);
+    });
+}
+
+// Eliminar un ítem del historial
+function eliminarItemHistorial(index) {
+    let historial = JSON.parse(localStorage.getItem('historial')) || [];
+    historial.splice(index, 1);
+    localStorage.setItem('historial', JSON.stringify(historial));
+    actualizarHistorial(historial);
+}
+
+// Borrar el historial
+function borrarHistorial() {
+    localStorage.removeItem('historial');
+    actualizarHistorial([]);
+}
+
+// Lectura correcta del código QR
+function lecturaCorrecta(codigoTexto, codigoObjeto) {
+    if (isScanning) return; // Si ya está escaneando, no hacer nada
+
+    isScanning = true;
+    console.log(`Code matched = ${codigoTexto}`, codigoObjeto);
+    mostrarResultado(codigoTexto);
+    
+    // Reiniciar el estado de escaneo después de mostrar el resultado
+    setTimeout(() => {
+        isScanning = false;
+    }, 1000); // Ajustar el tiempo según sea necesario
+}
+
+// Manejo de errores de escaneo
+function errorLectura(error) {
+    console.warn(`Code scan error = ${error}`);
+}
+
+// Inicializar la lista de cámaras
+Html5Qrcode.getCameras().then(camaras => {
+    if (camaras && camaras.length) {
+        let select = document.getElementById("listaCamaras");
+        let html = `<option value="" selected>Seleccione una cámara</option>`;
+        camaras.forEach(camara => {
+            html += `<option value="${camara.id}">${camara.label}</option>`;
+        });
+        select.innerHTML = html;
+
+        // Seleccionar la cámara trasera por defecto
+        cameraId = camaras.find(c => c.label.toLowerCase().includes('back'))?.id || camaras[0]?.id;
+        if (cameraId) {
+            camaraSeleccionada({ value: cameraId });
+        }
+    }
+}).catch(err => {
+    console.error(err);
 });
 
+// Seleccionar la cámara
 const camaraSeleccionada = (elemento) => {
     let idCamaraSeleccionada = elemento.value;
     document.getElementById("imagenReferencial").style.display = "none";
-    if (html5QrCode) {
-        html5QrCode.stop(); // Detener la cámara si ya está corriendo
-    }
     html5QrCode = new Html5Qrcode("reader");
     html5QrCode.start(
         idCamaraSeleccionada, 
@@ -47,25 +132,31 @@ const camaraSeleccionada = (elemento) => {
     });
 }
 
+// Detener la cámara
 const detenerCamara = () => {
-    if (html5QrCode) {
-        html5QrCode.stop().then(() => {
-            document.getElementById("imagenReferencial").style.display = "block";
-            document.getElementById("listaCamaras").value = "";
-            document.getElementById("btn-reactivar-camara").style.display = "block";
-        }).catch(err => {
-            console.error(err);
-        });
-    }
+    html5QrCode.stop().then(() => {
+        document.getElementById("imagenReferencial").style.display = "block";
+        document.getElementById("listaCamaras").value = "";
+    }).catch(err => {
+        console.error(err);
+    });
 }
 
+// Reactivar la cámara trasera
 const reactivarCamara = () => {
-    document.getElementById("btn-reactivar-camara").style.display = "none";
-    if (cameraId) {
-        camaraSeleccionada({ value: cameraId });
-    }
+    Html5Qrcode.getCameras().then(camaras => {
+        if (camaras && camaras.length) {
+            cameraId = camaras.find(c => c.label.toLowerCase().includes('back'))?.id || camaras[0]?.id;
+            if (cameraId) {
+                camaraSeleccionada({ value: cameraId });
+            }
+        }
+    }).catch(err => {
+        console.error(err);
+    });
 }
 
+// Inicializar el escáner de archivos
 const html5QrCode2 = new Html5Qrcode("reader-file");
 const fileinput = document.getElementById('qr-input-file');
 fileinput.addEventListener('change', e => {
@@ -97,76 +188,8 @@ fileinput.addEventListener('change', e => {
         });
 });
 
-function mostrarResultado(codigoTexto) {
-    // Clasificar y formatear el resultado
-    let resultadoFormateado = clasificarResultado(codigoTexto);
-    
-    // Mostrar el resultado en el modal
-    document.getElementById('modalResultBody').innerHTML = resultadoFormateado;
-    let resultModal = new bootstrap.Modal(document.getElementById('resultModal'), {});
-    resultModal.show();
-
-    // Guardar en el historial y en el local storage
-    guardarEnHistorial(codigoTexto, resultadoFormateado);
-}
-
-function clasificarResultado(codigoTexto) {
-    if (codigoTexto.startsWith("WIFI:")) {
-        return formatearWifi(codigoTexto);
-    }
-    // Agregar más clasificaciones si es necesario
-    return `<p>${codigoTexto}</p>`;
-}
-
-function formatearWifi(codigoTexto) {
-    let ssid = codigoTexto.match(/S:(.*?);/)[1];
-    let pass = codigoTexto.match(/P:(.*?);/)[1];
-    let tipo = codigoTexto.match(/T:(.*?);/)[1];
-    
-    return `
-        <h5>Información de WiFi</h5>
-        <p><strong>SSID:</strong> ${ssid}</p>
-        <p><strong>Contraseña:</strong> ${pass}</p>
-        <p><strong>Tipo:</strong> ${tipo}</p>
-    `;
-}
-
-function guardarEnHistorial(codigoTexto, resultadoFormateado) {
+// Cargar el historial al iniciar
+document.addEventListener('DOMContentLoaded', () => {
     let historial = JSON.parse(localStorage.getItem('historial')) || [];
-    historial.push({codigo: codigoTexto, resultado: resultadoFormateado});
-    localStorage.setItem('historial', JSON.stringify(historial));
-
-    // Actualizar el historial en la interfaz
     actualizarHistorial(historial);
-}
-
-function actualizarHistorial(historial) {
-    let historialUl = document.getElementById('historial');
-    historialUl.innerHTML = '';
-    historial.forEach((item, index) => {
-        let li = document.createElement('li');
-        li.className = 'list-group-item d-flex justify-content-between align-items-center';
-        li.innerHTML = `<div class="resultado">${item.resultado}</div><button class="btn btn-danger btn-sm" onclick="eliminarItemHistorial(${index})"><i class="fas fa-trash-alt"></i></button>`;
-        historialUl.appendChild(li);
-    });
-}
-
-function eliminarItemHistorial(indice) {
-    let historial = JSON.parse(localStorage.getItem('historial')) || [];
-    historial.splice(indice, 1);
-    localStorage.setItem('historial', JSON.stringify(historial));
-    actualizarHistorial(historial);
-}
-
-function borrarHistorial() {
-    localStorage.removeItem('historial');
-    actualizarHistorial([]);
-}
-
-const lecturaCorrecta = (resultado) => {
-    mostrarResultado(resultado);
-};
-
-const errorLectura = (error) => {
-    console.warn(`Error de lectura: ${error}`);
-};
+});
