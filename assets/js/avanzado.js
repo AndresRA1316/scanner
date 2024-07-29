@@ -64,15 +64,21 @@ function guardarEnHistorial(codigoTexto, resultadoFormateado) {
     actualizarHistorial(historial);
 }
 
+
 function actualizarHistorial(historial) {
     let historialUl = document.getElementById('historial');
     historialUl.innerHTML = '';
-    historial.forEach((item, index) => {
-        let li = document.createElement('li');
-        li.className = 'list-group-item d-flex justify-content-between align-items-center';
-        li.innerHTML = `<div class="resultado">${item.resultado}</div><button class="btn btn-primary btn-sm" onclick="eliminarItemHistorial(${index})"><i class="fas fa-trash-alt"></i></button>`;
-        historialUl.appendChild(li);
-    });
+
+    if (historial.length === 0) {
+        historialUl.innerHTML = '<li class="list-group-item">Ups!, No hay nada aun.</li>';
+    } else {
+        historial.forEach((item, index) => {
+            let li = document.createElement('li');
+            li.className = 'list-group-item d-flex justify-content-between align-items-center';
+            li.innerHTML = `<div class="resultado">${item.resultado}</div><button class="btn btn-primary btn-sm" onclick="eliminarItemHistorial(${index})"><i class="fas fa-trash-alt"></i></button>`;
+            historialUl.appendChild(li);
+        });
+    }
 }
 
 function eliminarItemHistorial(index) {
