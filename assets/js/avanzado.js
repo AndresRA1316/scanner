@@ -82,7 +82,8 @@ function lecturaCorrecta(codigoTexto, codigoObjeto) {
     console.log(`Code matched = ${codigoTexto}`, codigoObjeto);
     mostrarResultado(codigoTexto);
     // Se asegura de detener la cámara antes de iniciar una nueva instancia
-    html5QrCode.stop().then(() => {
+    detenerCamara().then(() => {
+        // Cuando se detiene la cámara, asegurarse de que la imagen referencial se muestra
         document.getElementById("imagenReferencial").style.display = "block";
     }).catch(err => {
         console.error(err);
@@ -119,48 +120,10 @@ const camaraSeleccionada = (elemento) => {
     let idCamaraSeleccionada = elemento.value;
     document.getElementById("imagenReferencial").style.display = "none";
     // Detener la cámara anterior si está activa
-    if (html5QrCode) {
-        html5QrCode.stop().catch(err => {
-            console.error(err);
-        });
-    }
-    html5QrCode = new Html5Qrcode("reader");
-    html5QrCode.start(
-        idCamaraSeleccionada, 
-        {
-            fps: 10,
-            qrbox: { width: 250, height: 250 }
-        },
-        lecturaCorrecta,
-        errorLectura
-    ).catch(err => {
-        console.error(err);
-    });
-}
-
-const detenerCamara = () => {
-    // Detener la cámara y asegurarse de que la imagen referencial se muestra
-    if (html5QrCode) {
-        html5QrCode.stop().then(() => {
-            document.getElementById("imagenReferencial").style.display = "block";
-            document.getElementById("listaCamaras").value = "";
-        }).catch(err => {
-            console.error(err);
-        });
-    }
-}
-
-const iniciarCamara = () => {
-    if (cameraId) {
-        // Detener la cámara anterior si está activa
-        if (html5QrCode) {
-            html5QrCode.stop().catch(err => {
-                console.error(err);
-            });
-        }
+    detenerCamara().then(() => {
         html5QrCode = new Html5Qrcode("reader");
         html5QrCode.start(
-            cameraId, 
+            idCamaraSeleccionada, 
             {
                 fps: 10,
                 qrbox: { width: 250, height: 250 }
@@ -168,6 +131,46 @@ const iniciarCamara = () => {
             lecturaCorrecta,
             errorLectura
         ).catch(err => {
+            console.error(err);
+        });
+    }).catch(err => {
+        console.error(err);
+    });
+}
+
+const detenerCamara = () => {
+    return new Promise((resolve, reject) => {
+        if (html5QrCode) {
+            html5QrCode.stop().then(() => {
+                document.getElementById("imagenReferencial").style.display = "block";
+                document.getElementById("listaCamaras").value = "";
+                resolve();
+            }).catch(err => {
+                reject(err);
+            });
+        } else {
+            resolve();
+        }
+    });
+}
+
+const iniciarCamara = () => {
+    if (cameraId) {
+        // Detener la cámara anterior si está activa
+        detenerCamara().then(() => {
+            html5QrCode = new Html5Qrcode("reader");
+            html5QrCode.start(
+                cameraId, 
+                {
+                    fps: 10,
+                    qrbox: { width: 250, height: 250 }
+                },
+                lecturaCorrecta,
+                errorLectura
+            ).catch(err => {
+                console.error(err);
+            });
+        }).catch(err => {
             console.error(err);
         });
     }
