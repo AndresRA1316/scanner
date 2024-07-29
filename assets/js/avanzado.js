@@ -1,8 +1,7 @@
 let html5QrCode = null;
 let cameraId = null; // Variable para guardar el ID de la cámara seleccionada
-let isScanning = false; // Variable para evitar múltiples escaneos
+let isCameraActive = false; // Variable para controlar el estado de la cámara
 
-// Mostrar el resultado en el modal
 function mostrarResultado(codigoTexto) {
     // Clasificar y formatear el resultado
     let resultadoFormateado = clasificarResultado(codigoTexto);
@@ -16,7 +15,6 @@ function mostrarResultado(codigoTexto) {
     guardarEnHistorial(codigoTexto, resultadoFormateado);
 }
 
-// Clasificar el resultado
 function clasificarResultado(codigoTexto) {
     if (codigoTexto.startsWith("WIFI:")) {
         return formatearWifi(codigoTexto);
@@ -25,7 +23,6 @@ function clasificarResultado(codigoTexto) {
     return `<p>${codigoTexto}</p>`;
 }
 
-// Formatear información de WiFi
 function formatearWifi(codigoTexto) {
     let ssid = codigoTexto.match(/S:(.*?);/)[1];
     let pass = codigoTexto.match(/P:(.*?);/)[1];
@@ -39,7 +36,6 @@ function formatearWifi(codigoTexto) {
     `;
 }
 
-// Guardar en el historial
 function guardarEnHistorial(codigoTexto, resultadoFormateado) {
     let historial = JSON.parse(localStorage.getItem('historial')) || [];
     historial.push({codigo: codigoTexto, resultado: resultadoFormateado});
@@ -49,7 +45,6 @@ function guardarEnHistorial(codigoTexto, resultadoFormateado) {
     actualizarHistorial(historial);
 }
 
-// Actualizar el historial en la interfaz
 function actualizarHistorial(historial) {
     let historialUl = document.getElementById('historial');
     historialUl.innerHTML = '';
@@ -61,7 +56,6 @@ function actualizarHistorial(historial) {
     });
 }
 
-// Eliminar un ítem del historial
 function eliminarItemHistorial(index) {
     let historial = JSON.parse(localStorage.getItem('historial')) || [];
     historial.splice(index, 1);
@@ -69,32 +63,20 @@ function eliminarItemHistorial(index) {
     actualizarHistorial(historial);
 }
 
-// Borrar el historial
 function borrarHistorial() {
     localStorage.removeItem('historial');
     actualizarHistorial([]);
 }
 
-// Lectura correcta del código QR
 function lecturaCorrecta(codigoTexto, codigoObjeto) {
-    if (isScanning) return; // Si ya está escaneando, no hacer nada
-
-    isScanning = true;
     console.log(`Code matched = ${codigoTexto}`, codigoObjeto);
     mostrarResultado(codigoTexto);
-    
-    // Reiniciar el estado de escaneo después de mostrar el resultado
-    setTimeout(() => {
-        isScanning = false;
-    }, 1000); // Ajustar el tiempo según sea necesario
 }
 
-// Manejo de errores de escaneo
 function errorLectura(error) {
     console.warn(`Code scan error = ${error}`);
 }
 
-// Inicializar la lista de cámaras
 Html5Qrcode.getCameras().then(camaras => {
     if (camaras && camaras.length) {
         let select = document.getElementById("listaCamaras");
@@ -114,8 +96,11 @@ Html5Qrcode.getCameras().then(camaras => {
     console.error(err);
 });
 
-// Seleccionar la cámara
 const camaraSeleccionada = (elemento) => {
+    if (isCameraActive) {
+        detenerCamara(); // Detener la cámara si ya está activa
+    }
+
     let idCamaraSeleccionada = elemento.value;
     document.getElementById("imagenReferencial").style.display = "none";
     html5QrCode = new Html5Qrcode("reader");
@@ -127,36 +112,31 @@ const camaraSeleccionada = (elemento) => {
         },
         lecturaCorrecta,
         errorLectura
-    ).catch(err => {
+    ).then(() => {
+        isCameraActive = true; // Marcar la cámara como activa
+    }).catch(err => {
         console.error(err);
     });
 }
 
-// Detener la cámara
 const detenerCamara = () => {
-    html5QrCode.stop().then(() => {
-        document.getElementById("imagenReferencial").style.display = "block";
-        document.getElementById("listaCamaras").value = "";
-    }).catch(err => {
-        console.error(err);
-    });
+    if (html5QrCode) {
+        html5QrCode.stop().then(() => {
+            document.getElementById("imagenReferencial").style.display = "block";
+            document.getElementById("listaCamaras").value = "";
+            isCameraActive = false; // Marcar la cámara como inactiva
+        }).catch(err => {
+            console.error(err);
+        });
+    }
 }
 
-// Reactivar la cámara trasera
 const reactivarCamara = () => {
-    Html5Qrcode.getCameras().then(camaras => {
-        if (camaras && camaras.length) {
-            cameraId = camaras.find(c => c.label.toLowerCase().includes('back'))?.id || camaras[0]?.id;
-            if (cameraId) {
-                camaraSeleccionada({ value: cameraId });
-            }
-        }
-    }).catch(err => {
-        console.error(err);
-    });
+    if (!isCameraActive && cameraId) {
+        camaraSeleccionada({ value: cameraId });
+    }
 }
 
-// Inicializar el escáner de archivos
 const html5QrCode2 = new Html5Qrcode("reader-file");
 const fileinput = document.getElementById('qr-input-file');
 fileinput.addEventListener('change', e => {
