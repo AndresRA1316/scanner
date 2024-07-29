@@ -1,8 +1,6 @@
 let html5QrCode = null;
 let cameraId = null; // Variable para guardar el ID de la cámara seleccionada
-
-// Variable para asegurarse de que el escaneo se realice solo una vez
-let scanning = false;
+let scanning = false; // Variable para evitar escaneos múltiples
 
 function mostrarResultado(codigoTexto) {
     if (scanning) return; // Evita que se procese si ya se está escaneando
@@ -16,14 +14,15 @@ function mostrarResultado(codigoTexto) {
     let resultModal = new bootstrap.Modal(document.getElementById('resultModal'), {});
     resultModal.show();
 
-    // Guardar en el historial y en el local storage
-    guardarEnHistorial(codigoTexto, resultadoFormateado);
-
-    // Limpiar el modal cuando se cierra
+    // Limpiar el modal y reiniciar el escaneo cuando se cierra
     document.getElementById('resultModal').addEventListener('hidden.bs.modal', function () {
         document.getElementById('modalResultBody').innerHTML = '';
         scanning = false; // Permite nuevos escaneos
+        iniciarCamara(); // Reiniciar la cámara
     });
+
+    // Guardar en el historial y en el local storage
+    guardarEnHistorial(codigoTexto, resultadoFormateado);
 }
 
 function clasificarResultado(codigoTexto) {
@@ -82,7 +81,11 @@ function borrarHistorial() {
 function lecturaCorrecta(codigoTexto, codigoObjeto) {
     console.log(`Code matched = ${codigoTexto}`, codigoObjeto);
     mostrarResultado(codigoTexto);
-    detenerCamara(); // Detener la cámara después de escanear un código
+    html5QrCode.stop().then(() => {
+        document.getElementById("imagenReferencial").style.display = "block";
+    }).catch(err => {
+        console.error(err);
+    });
 }
 
 function errorLectura(error) {
@@ -135,6 +138,23 @@ const detenerCamara = () => {
     }).catch(err => {
         console.error(err);
     });
+}
+
+const iniciarCamara = () => {
+    let idCamaraSeleccionada = document.getElementById("listaCamaras").value;
+    if (idCamaraSeleccionada) {
+        html5QrCode.start(
+            idCamaraSeleccionada, 
+            {
+                fps: 10,
+                qrbox: { width: 250, height: 250 }
+            },
+            lecturaCorrecta,
+            errorLectura
+        ).catch(err => {
+            console.error(err);
+        });
+    }
 }
 
 const html5QrCode2 = new Html5Qrcode("reader-file");
