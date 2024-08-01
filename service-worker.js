@@ -1,11 +1,10 @@
-// service-worker.js
-
 const CACHE_NAME = 'drawy-scanner-cache-v1';
 const urlsToCache = [
   '/',
   '/index.html',
   '/assets/icons/icon-192x192.png',
   '/assets/icons/icon-512x512.png',
+  '/assets/icons/icon-144x144.png',
   // Agrega otras rutas de archivos necesarios
 ];
 
@@ -29,3 +28,4 @@ self.addEventListener('fetch', (event) => {
       })
   );
 });
+
