@@ -178,14 +178,21 @@
 }
 
 /* styles.css */
-
+.navbar-brand span{
+    color: rgb(0, 114, 245);
+}
 /* Estilo para los títulos de las pestañas */
 .tab-title {
     font-size: 1.5rem;
-    font-weight: bold;
+    font-weight: 400;
     margin-bottom: 1rem;
     text-align: center; /* Centra el título en la pestaña */
     color: #333; /* Color del texto */
+}
+
+/* Alineación del contenido de cada pestaña */
+.tab-pane {
+    padding: 1rem;
 }
 
 /* Estilo de botones y otros elementos */
