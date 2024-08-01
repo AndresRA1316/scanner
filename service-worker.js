@@ -1,11 +1,14 @@
-const CACHE_NAME = 'drawy-scanner-cache-v1';
+const CACHE_NAME = 'simple-pwa-cache-v1';
 const urlsToCache = [
   '/',
   '/index.html',
+  '/assets/CSS/styles.css',
+  '/assets/js/avanzado.js',
+  '/assets/plugins/scanapp.min.js',
+  '/registerpwa.js',
   '/assets/icons/icon-192x192.png',
   '/assets/icons/icon-512x512.png',
-  '/assets/icons/icon-144x144.png',
-  // Agrega otras rutas de archivos necesarios
+  '/assets/icons/icon-144x144.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -28,4 +31,3 @@ self.addEventListener('fetch', (event) => {
       })
   );
 });
-
