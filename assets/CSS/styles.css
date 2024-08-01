@@ -1,0 +1,217 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+ 
+/* Estilos básicos */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+
+.resultado img {
+    max-width: 100px;
+    height: 30px;
+}
+.table-responsive {
+    margin-top: 20px;
+}
+.acciones {
+    text-align: center;
+}
+.acciones button {
+    margin: 0 5px;
+}
+#reader-file{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 350px;
+    background-image: url('/assets/img/qrbar.jpg');
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.img-fluid {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+
+    .navbar-nav {
+        text-align: center;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    #reader, #reader-file {
+        width: 100% !important;
+    }
+
+    .img-thumbnail {
+        max-width: 100%;
+        height: auto;
+    }
+}
+
+@media (min-width: 769px) {
+    #reader, #reader-file {
+        width: 100%;
+    }
+}
+/* styles.css */
+/* styles.css */
+
+/* Estilos generales para dispositivos móviles */
+@media (max-width: 767.98px) {
+    .navbar-collapse {
+        display: flex !important; /* Forzar la visualización del menú en móviles */
+    }
+
+    .navbar-nav {
+        width: 100%;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        background-color: #ffffff; /* Color de fondo del menú */
+        border-top: 1px solid #ddd;
+        z-index: 1000;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+        align-items: center; /* Centrar verticalmente los ítems */
+        padding: 0;
+        box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2); /* Sombra sutil para el menú */
+    }
+
+    .navbar-toggler {
+        display: none; /* Oculta el botón de alternancia en dispositivos móviles */
+    }
+
+    .nav-item {
+        flex: 1;
+        text-align: center;
+        display: flex; /* Permite usar Flexbox para centrar contenido */
+        justify-content: center; /* Centrar horizontalmente el contenido dentro del ítem */
+        align-items: center; /* Centrar verticalmente el contenido dentro del ítem */
+        padding: 0.5rem;
+        position: relative;
+    }
+
+    .nav-link {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 0.5rem;
+        color: #333; /* Color del texto */
+        text-decoration: none; /* Quitar subrayado del texto */
+        transition: background-color 0.3s, color 0.3s; /* Transiciones suaves */
+        border-radius: 20px; /* Bordes redondeados */
+    }
+
+    .nav-link:hover {
+        background-color: #f0f0f0; /* Fondo al pasar el mouse sobre el ítem */
+        color: #000; /* Color del texto al pasar el mouse */
+    }
+
+    .nav-link i {
+        font-size: 1.8rem; /* Ajusta el tamaño del icono */
+        margin-bottom: 0.2rem; /* Espacio entre el icono y el texto */
+    }
+
+    .nav-text {
+        display: none; /* Oculta el texto en dispositivos móviles */
+    }
+
+    .camera-icon {
+        color: #ff5733; /* Color del icono de cámara */
+    }
+
+    .image-icon {
+        color: #33c1ff; /* Color del icono de imagen */
+    }
+
+    .history-icon {
+        color: #28a745; /* Color del icono de historial */
+    }
+
+    .generate-icon {
+        color: #ffc107; /* Color del icono de generar QR */
+    }
+}
+
+/* Estilos para pantallas grandes */
+@media (min-width: 768px) {
+    .navbar-toggler {
+        display: block; /* Muestra el botón de alternancia en pantallas grandes */
+    }
+
+    .navbar-collapse {
+        display: flex; /* Asegura que el menú se muestre en pantallas grandes */
+    }
+
+    .nav-text {
+        display: inline; /* Muestra el texto completo en pantallas grandes */
+    }
+
+    .camera-icon {
+        color: #ff5733; /* Color del icono de cámara */
+    }
+
+    .image-icon {
+        color: #33c1ff; /* Color del icono de imagen */
+    }
+
+    .history-icon {
+        color: #28a745; /* Color del icono de historial */
+    }
+
+    .generate-icon {
+        color: #ffc107; /* Color del icono de generar QR */
+    }
+}
+
+/* styles.css */
+
+/* Estilo para los títulos de las pestañas */
+.tab-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    text-align: center; /* Centra el título en la pestaña */
+    color: #333; /* Color del texto */
+}
+
+/* Alineación del contenido de cada pestaña */
+.tab-pane {
+    padding: 1rem;
+}
+
+/* Estilo de botones y otros elementos */
+.btn-primary {
+    background-color: #007bff; /* Color del botón */
+    border-color: #007bff; /* Color del borde del botón */
+}
+
+.btn-primary:hover {
+    background-color: #0056b3; /* Color del botón al pasar el mouse */
+    border-color: #004085; /* Color del borde del botón al pasar el mouse */
+}
+
+.btn-secondary {
+    background-color: #6c757d; /* Color del botón secundario */
+    border-color: #6c757d; /* Color del borde del botón secundario */
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268; /* Color del botón secundario al pasar el mouse */
+    border-color: #545b62; /* Color del borde del botón secundario al pasar el mouse */
+}
+
+
