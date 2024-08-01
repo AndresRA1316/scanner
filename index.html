@@ -53,70 +53,78 @@
         </nav>
     </div>
     
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-12 col-md-8 col-lg-6 shadow p-3 mb-5 bg-body rounded">
-            <div class="tab-content mt-3" id="nav-tabContent">
-                <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab" tabindex="0">
-                    <img src="assets/img/qrbar.jpg" class="img-fluid mt-3 d-none d-md-block" alt="ImagenScanner" id="imagenReferencial">
-                    <div id="reader" class="w-100 mt-3"></div>
-                    <div class="mt-2">
-                        <select class="form-select" id="listaCamaras" onchange="camaraSeleccionada(this)">
-                        </select>
-                        <button class="btn btn-primary w-100 mt-2" onclick="detenerCamara()">Detener cámara</button>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8 col-lg-6 shadow p-3 mb-5 bg-body rounded">
+                <div class="tab-content mt-3" id="nav-tabContent">
+                    <!-- Escanear con cámara -->
+                    <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab" tabindex="0">
+                        <h3 class="tab-title">Escanear con Cámara</h3>
+                        <img src="assets/img/qrbar.jpg" class="img-fluid mt-3 d-none d-md-block" alt="ImagenScanner" id="imagenReferencial">
+                        <div id="reader" class="w-100 mt-3"></div>
+                        <div class="mt-2">
+                            <select class="form-select" id="listaCamaras" onchange="camaraSeleccionada(this)">
+                            </select>
+                            <button class="btn btn-primary w-100 mt-2" onclick="detenerCamara()">Detener cámara</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Escanear imágenes -->
+                    <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab" tabindex="0">
+                        <h3 class="tab-title">Escanear Imágenes</h3>
+                        <div id="reader-file" class="w-100 mt-2"></div>
+                        <input type="file" id="qr-input-file" class="form-control mt-2" accept="image/*">
+                    </div>
+                    
+                    <!-- Historial -->
+                    <div class="tab-pane fade" id="nav-history" role="tabpanel" aria-labelledby="nav-history-tab" tabindex="0">
+                        <h3 class="tab-title">Historial</h3>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Resultado</th>
+                                        <th>Eliminar</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="historial">
+                                    <tr id="mensajeVacio" style="display: none;">
+                                        <td colspan="2" class="text-center">Ups, no hay nada en el historial</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <button class="btn btn-primary mt-2 mb-2" onclick="borrarHistorial()">Vaciar Historial</button>
+                    </div>
+                    
+                    <!-- Generar QR -->
+                    <div class="tab-pane fade" id="nav-generate" role="tabpanel" aria-labelledby="nav-generate-tab" tabindex="0">
+                        <h3 class="tab-title">Generar Código QR</h3>
+                        <div class="mb-3">
+                            <label for="qr-type" class="form-label">Tipo de QR:</label>
+                            <select id="qr-type" class="form-select" onchange="mostrarCampos()">
+                                <option value="">Seleccionar tipo</option>
+                                <option value="url">URL</option>
+                                <option value="email">Email</option>
+                                <option value="wifi">WiFi</option>
+                                <option value="texto">Texto</option>
+                                <option value="telefono">Teléfono</option>
+                                <option value="ubicacion">Ubicación</option>
+                                <option value="evento">Evento</option>
+                            </select>
+                        </div>
+                        <div id="qr-fields">
+                            <!-- Los campos específicos se agregarán aquí -->
+                        </div>
+                        <button class="btn btn-primary mb-2" onclick="generarQR()">Generar QR</button>
+                        <div id="qr-output" class="mt-3"></div>
+                        <button id="download-btn" class="btn btn-secondary mt-2" style="display: none;" onclick="descargarQR()">Descargar QR</button>
                     </div>
                 </div>
-                <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab" tabindex="0">
-                    <div id="reader-file" class="w-100 mt-2"></div>
-                    <input type="file" id="qr-input-file" class="form-control mt-2" accept="image/*">
-                </div>
-                <div class="tab-pane fade" id="nav-history" role="tabpanel" aria-labelledby="nav-history-tab" tabindex="0">
-                    <h3>Historial</h3>
-                    <div class="table-responsive">
-                        <table class="table table-striped table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Resultado</th>
-                                    <th>Delete</th>
-                                </tr>
-                            </thead>
-                            <tbody id="historial">
-                                <tr id="mensajeVacio" style="display: none;">
-                                    <td colspan="2" class="text-center">Ups, no hay nada en el historial</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <button class="btn btn-primary mt-2 mb-2" onclick="borrarHistorial()">Vaciar Historial</button>
-                </div>
-                <div class="tab-pane fade" id="nav-generate" role="tabpanel" aria-labelledby="nav-generate-tab" tabindex="0">
-                    <h3>Generar Código QR</h3>
-                    <div class="mb-3">
-                        <label for="qr-type" class="form-label">Tipo de QR:</label>
-                        <select id="qr-type" class="form-select" onchange="mostrarCampos()">
-                            <option value="">Seleccionar tipo</option>
-                            <option value="url">URL</option>
-                            <option value="email">Email</option>
-                            <option value="wifi">WiFi</option>
-                            <option value="texto">Texto</option>
-                            <option value="telefono">Teléfono</option>
-                            <option value="ubicacion">Ubicación</option>
-                            <option value="evento">Evento</option>
-                        </select>
-                    </div>
-                    <div id="qr-fields">
-                        <!-- Los campos específicos se agregarán aquí -->
-                    </div>
-                    <button class="btn btn-primary mb-2" onclick="generarQR()">Generar QR</button>
-                    <div id="qr-output" class="mt-3"></div>
-                    <button id="download-btn" class="btn btn-secondary mt-2" style="display: none;" onclick="descargarQR()">Descargar QR</button>
-                </div>
-                
-                
             </div>
         </div>
     </div>
-</div>
+    
 
 <!-- Modal -->
 <div class="modal fade" id="resultModal" tabindex="-1" aria-labelledby="resultModalLabel" aria-hidden="true">
