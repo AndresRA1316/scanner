@@ -511,3 +511,20 @@ function descargarQR() {
         downloadLink.click();
     }
 }
+
+/**Close main navigator */
+document.addEventListener('DOMContentLoaded', function () {
+    var navLinks = document.querySelectorAll('.nav-link');
+    var navbarCollapse = document.querySelector('.navbar-collapse');
+
+    navLinks.forEach(function (link) {
+        link.addEventListener('click', function () {
+            if (window.innerWidth < 992) {
+                var bsCollapse = new bootstrap.Collapse(navbarCollapse, {
+                    toggle: false
+                });
+                bsCollapse.hide();
+            }
+        });
+    });
+});
