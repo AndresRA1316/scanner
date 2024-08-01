@@ -1,14 +1,25 @@
-*{
+/* Estilos básicos */
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family:'poppins', sans-serif;
-}
-.resultado img {
-    max-width: 100px; /* Ajusta el tamaño máximo de las imágenes */
-    height: 30px; /* Mantén la proporción de aspecto */
+    font-family: 'Poppins', sans-serif;
 }
 
+
+.resultado img {
+    max-width: 100px;
+    height: 30px;
+}
+.table-responsive {
+    margin-top: 20px;
+}
+.acciones {
+    text-align: center;
+}
+.acciones button {
+    margin: 0 5px;
+}
 #reader-file{
     display: flex;
     align-items: center;
@@ -24,8 +35,22 @@
     background-repeat: no-repeat;
 }
 
-/* Asegúrate de que el modal y otros elementos se vean bien en dispositivos móviles */
-@media (max-width: 768px) {
+.img-fluid {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+
+    .navbar-nav {
+        text-align: center;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
     #reader, #reader-file {
         width: 100% !important;
     }
@@ -39,42 +64,5 @@
 @media (min-width: 769px) {
     #reader, #reader-file {
         width: 100%;
-    }
-}
-
-/* Asegura que la imagen referencial se ajuste en diferentes dispositivos */
-.img-fluid {
-    max-width: 100%;
-    height: auto;
-}
-
-/* Mejora la apariencia del historial en dispositivos móviles */
-#historial .list-group-item {
-    padding: 10px;
-    font-size: 14px;
-}
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Poppins', sans-serif;
-}
-.resultado img {
-    max-width: 100px;
-    height: 30px;
-}
-.table-responsive {
-    margin-top: 20px;
-}
-.acciones {
-    text-align: center;
-}
-.acciones button {
-    margin: 0 5px;
-}
-@media (max-width: 768px) {
-    .table-responsive {
-        overflow-x: auto;
     }
 }
